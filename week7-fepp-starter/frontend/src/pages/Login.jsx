@@ -2,13 +2,13 @@ import useField from "../hooks/useField";
 import useLogin from "../hooks/useLogin";
 import { useNavigate } from "react-router-dom";
 
-const Login = () => {
+const Login = ({ setIsAuthenticated }) => {
   const navigate = useNavigate();
 
   const email = useField("email");
   const password = useField("password");
 
-  const { login, error } = useLogin("/api/users/login");
+  const { login, error, isLoading } = useLogin("/api/users/login");
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
@@ -20,8 +20,8 @@ const Login = () => {
 
     if (success) {
       alert("Successful login!");
-
-      window.location.href = "/"; 
+      setIsAuthenticated(true);
+      navigate("/");
     }
   };
 
@@ -35,7 +35,7 @@ const Login = () => {
         <label>Password:</label>
         <input {...password} required />
 
-        <button>Login</button>
+        <button disabled={isLoading}>Login</button>
       </form>
 
       {error && <p className="error">{error}</p>}

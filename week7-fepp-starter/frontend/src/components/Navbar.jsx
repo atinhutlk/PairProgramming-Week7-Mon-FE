@@ -1,12 +1,13 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
-const Navbar = () => {
-  const user = JSON.parse(localStorage.getItem("user") || "null");
+const Navbar = ({ isAuthenticated, setIsAuthenticated }) => {
+  const navigate = useNavigate();
 
   const handleLogout = () => {
     localStorage.removeItem("user");
+    setIsAuthenticated(false);
     alert("Logged out");
-    window.location.href = "/";  
+    navigate("/login");
   };
 
   return (
@@ -16,16 +17,21 @@ const Navbar = () => {
       </Link>
       <div className="links">
         <Link to="/">Home</Link>
-        <Link to="/add-job">Add Job</Link>
 
-        {!user && (
+        {isAuthenticated && <Link to="/add-job">Add Job</Link>}
+
+        {!isAuthenticated && (
           <>
             <Link to="/login">Login</Link>
             <Link to="/signup">Signup</Link>
           </>
         )}
 
-        {user && <button onClick={handleLogout}>Log out</button>}
+        {isAuthenticated && (
+          <button className="logout-link" onClick={handleLogout}>
+            Log out
+          </button>
+        )}
       </div>
     </nav>
   );

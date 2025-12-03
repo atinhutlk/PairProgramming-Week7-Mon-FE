@@ -16,6 +16,7 @@ const EditJobPage = () => {
   const [contactEmail, setContactEmail] = useState("");
   const [contactPhone, setContactPhone] = useState("");
 
+  // lấy job hiện tại
   useEffect(() => {
     const fetchJob = async () => {
       try {
@@ -43,17 +44,25 @@ const EditJobPage = () => {
   }, [id]);
 
   const updateJob = async (updatedJob) => {
+    const storedUser = JSON.parse(localStorage.getItem("user") || "null");
+    const token = storedUser?.token;
+
     const res = await fetch(`/api/jobs/${id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
       body: JSON.stringify(updatedJob),
     });
 
     if (!res.ok) {
+      if (res.status === 401 || res.status === 403) {
+        throw new Error("You must be logged in to edit jobs");
+      }
       throw new Error("Failed to update job");
     }
+
     return await res.json();
   };
 

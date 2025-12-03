@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 
-const JobPage = () => {
+const JobPage = ({ isAuthenticated }) => {
   const { id } = useParams();
   const navigate = useNavigate();
 
@@ -11,16 +11,25 @@ const JobPage = () => {
 
   const deleteJob = async (jobId) => {
     try {
+      const storedUser = JSON.parse(localStorage.getItem("user") || "null");
+      const token = storedUser?.token; // giả sử backend trả token ở đây
+
       const res = await fetch(`/api/jobs/${jobId}`, {
         method: "DELETE",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
 
       if (!res.ok) {
+        if (res.status === 401 || res.status === 403) {
+          throw new Error("You must be logged in to delete jobs");
+        }
         throw new Error("Failed to delete job");
       }
     } catch (err) {
       setError(err.message);
+      return false;
     }
+    return true;
   };
 
   useEffect(() => {
@@ -45,7 +54,8 @@ const JobPage = () => {
   }, [id]);
 
   const onDelete = async (jobId) => {
-    await deleteJob(jobId);
+    const ok = await deleteJob(jobId);
+    if (!ok) return; 
     navigate("/");
   };
 
@@ -68,10 +78,14 @@ const JobPage = () => {
           <p>Email: {jobData.company.contactEmail}</p>
           <p>Phone: {jobData.company.contactPhone}</p>
 
-          <button onClick={onEdit} style={{ marginRight: "0.5rem" }}>
-            edit
-          </button>
-          <button onClick={() => onDelete(jobData._id)}>delete</button>
+          {isAuthenticated && (
+            <>
+              <button onClick={onEdit} style={{ marginRight: "0.5rem" }}>
+                edit
+              </button>
+              <button onClick={() => onDelete(jobData._id)}>delete</button>
+            </>
+          )}
         </>
       )}
     </div>

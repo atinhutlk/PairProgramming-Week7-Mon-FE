@@ -1,3 +1,4 @@
+// src/pages/AddJobPage.jsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -13,14 +14,23 @@ const AddJobPage = () => {
 
   const addJob = async (newJob) => {
     try {
+      // lấy token từ localStorage
+      const storedUser = JSON.parse(localStorage.getItem("user") || "null");
+      const token = storedUser?.token;
+
       const res = await fetch("/api/jobs", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify(newJob),
       });
+
       if (!res.ok) {
+        if (res.status === 401 || res.status === 403) {
+          alert("You must be logged in to add jobs");
+        }
         throw new Error("Failed to add job");
       }
     } catch (error) {
@@ -30,10 +40,9 @@ const AddJobPage = () => {
     return true;
   };
 
-  const submitForm = (e) => {
-
+  const submitForm = async (e) => {
     e.preventDefault();
-    
+
     const newJob = {
       title,
       type,
@@ -45,15 +54,13 @@ const AddJobPage = () => {
       },
     };
 
-    addJob(newJob);
+    const ok = await addJob(newJob);
+    if (!ok) return; // nếu fail thì không redirect
 
-    console.log("New job added:", newJob);
-    
-    return navigate("/");
+    navigate("/");
   };
 
-
-  return (
+return (
     <div className="create">
       <h2>Add a New Job</h2>
       <form onSubmit={submitForm}>
@@ -107,5 +114,8 @@ const AddJobPage = () => {
     </div>
   );
 };
+
+
+  
 
 export default AddJobPage;
