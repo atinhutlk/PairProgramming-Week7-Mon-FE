@@ -4,18 +4,35 @@ import { useNavigate } from "react-router-dom";
 
 const Signup = ({ setIsAuthenticated }) => {
   const navigate = useNavigate();
+
   const name = useField("text");
   const email = useField("email");
   const password = useField("password");
   const phoneNumber = useField("text");
   const gender = useField("text");
-  const dateOfBirth = useField("date");
-  const membershipStatus = useField("text");
+
+  const street = useField("text");
+  const city = useField("text");
+  const zipCode = useField("text");
 
   const { signup, error } = useSignup("/api/users/signup");
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
+
+    if (
+      !name.value ||
+      !email.value ||
+      !password.value ||
+      !phoneNumber.value ||
+      !gender.value ||
+      !street.value ||
+      !city.value ||
+      !zipCode.value
+    ) {
+      alert("Please fill in all required fields");
+      return;
+    }
 
     await signup({
       email: email.value,
@@ -23,8 +40,11 @@ const Signup = ({ setIsAuthenticated }) => {
       name: name.value,
       phone_number: phoneNumber.value,
       gender: gender.value,
-      date_of_birth: dateOfBirth.value,
-      membership_status: membershipStatus.value,
+      address: {
+        street: street.value,
+        city: city.value,
+        zipCode: zipCode.value,
+      },
     });
 
     if (!error) {
@@ -40,18 +60,28 @@ const Signup = ({ setIsAuthenticated }) => {
       <form onSubmit={handleFormSubmit}>
         <label>Name:</label>
         <input {...name} />
+
         <label>Email address:</label>
         <input {...email} />
+
         <label>Password:</label>
         <input {...password} />
+
         <label>Phone Number:</label>
         <input {...phoneNumber} />
+
         <label>Gender:</label>
         <input {...gender} />
-        <label>Date of Birth:</label>
-        <input {...dateOfBirth} />
-        <label>Membership Status:</label>
-        <input {...membershipStatus} />
+
+        <label>Street:</label>
+        <input {...street} />
+
+        <label>City:</label>
+        <input {...city} />
+
+        <label>Zip Code:</label>
+        <input {...zipCode} />
+
         <button>Sign up</button>
       </form>
 

@@ -19,9 +19,9 @@ const signupUser = async (req, res) => {
     password,
     phone_number,
     gender,
-    date_of_birth,
-    membership_status,
+    address,
   } = req.body;
+
   try {
     if (
       !name ||
@@ -29,12 +29,15 @@ const signupUser = async (req, res) => {
       !password ||
       !phone_number ||
       !gender ||
-      !date_of_birth ||
-      !membership_status
+      !address ||
+      !address.street ||
+      !address.city ||
+      !address.zipCode
     ) {
       res.status(400);
       throw new Error("Please add all fields");
     }
+
     // Check if user exists
     const userExists = await User.findOne({ email });
 
@@ -54,13 +57,15 @@ const signupUser = async (req, res) => {
       password: hashedPassword,
       phone_number,
       gender,
-      date_of_birth,
-      membership_status,
+      address: {
+        street: address.street,
+        city: address.city,
+        zipCode: address.zipCode,
+      },
     });
 
     if (user) {
-      // console.log(user._id);
-     const token = generateToken(user._id);
+      const token = generateToken(user._id);
       res.status(201).json({ email, token });
     } else {
       res.status(400);
